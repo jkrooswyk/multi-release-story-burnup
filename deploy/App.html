@@ -31,7 +31,7 @@
                             filterValues: ["Accepted"]
                         },{
                             field:"ObjectID",
-                            as:"Count",
+                            as:"Story Count",
                             display:"column",
                             f:"count"
                         //},{
@@ -43,7 +43,7 @@
                         return metrics
                     },
 
-                    getDerivedFieldsOnInput:function(){
+                    /*getDerivedFieldsOnInput:function(){
                         //return[{
                         //    as:"CalcPreliminaryEstimate",
                         //    f:function(row){
@@ -57,7 +57,8 @@
                     },
                     
                     getDerivedFieldsAfterSummary:function(){
-                        return[{
+                        return[]
+                        {
                           as:"Unused Series",
                           f:function(row,index,summaryMetrics,seriesData){
                             if(0==index){
@@ -78,7 +79,7 @@
 
                     defined:function(v){
                         return!_.isUndefined(v)&&!_.isNull(v)
-                    }
+                    }*/
 
                 }),
 
@@ -196,7 +197,7 @@
                             autoLoad:!0,
                             limit:1/0,
                             fetch:["ObjectID","Name","_TypeHierarchy","PlanEstimate","ScheduleState"],
-                            hydrate:["_TypeHierarchy","PlanEstimate"]
+                            hydrate:["_TypeHierarchy","ScheduleState"]
                         },
                         calculatorType:"MyBurnCalculator",
                         calculatorConfig:{},
