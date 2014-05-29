@@ -1,11 +1,11 @@
-var peRecords=[],acceptedData=[];
+                var peRecords=[],acceptedData=[];
 
                 Ext.define("MyBurnCalculator",{
                     extend:"Rally.data.lookback.calculator.TimeSeriesCalculator",
                     getMetrics:function(){
                         var metrics=[{
                             field:"PlanEstimate",
-                            as:"Planned Points",
+                            as:"Planned Days",
                             display:"line",
                             f:"sum"
                         },{
@@ -15,16 +15,16 @@ var peRecords=[],acceptedData=[];
                         //    f:"sum"
                         //},{
                             field:"PlanEstimate",
-                            as:"Accepted Points",
+                            as:"Accepted Work",
                             display:"line",
                             f:"filteredSum",
                             filterField: 'ScheduleState',
                             filterValues: ["Accepted"]
-                        },{
-                            field:"ObjectID",
-                            as:"Count",
-                            display:"column",
-                            f:"count"
+                        //},{
+                        //    field:"ObjectID",
+                        //    as:"Story Count",
+                        //    display:"column",
+                        //    f:"count"
                         //},{
                         //    field:"Completed",
                         //    as:"Completed",
@@ -34,7 +34,7 @@ var peRecords=[],acceptedData=[];
                         return metrics
                     },
 
-                    getDerivedFieldsOnInput:function(){
+                    /*getDerivedFieldsOnInput:function(){
                         //return[{
                         //    as:"CalcPreliminaryEstimate",
                         //    f:function(row){
@@ -48,28 +48,29 @@ var peRecords=[],acceptedData=[];
                     },
                     
                     getDerivedFieldsAfterSummary:function(){
-                        return[{
-                          as:"Projection",
+                        return[]
+                        {
+                          as:"Unused Series",
                           f:function(row,index,summaryMetrics,seriesData){
                             if(0==index){
                                 datesData=_.pluck(seriesData,"label"),
                                 acceptedData=_.pluck(seriesData,"Accepted Points"),
                                 console.log("accepted date len",acceptedData.length);
                                 var today=new Date;
-                                acceptedData=_.filter(acceptedData,function(d,i){
+                               acceptedData=_.filter(acceptedData,function(d,i){
                                     return today>new Date(Date.parse(datesData[i]))
                                 }),
                                 console.log("accepted date len",acceptedData.length)
                             }
-                            var y=linearProject(acceptedData,index);
-                            return y
+                            //var y=linearProject(acceptedData,index);
+                            //return y
                           }
                         }]
                     },
 
                     defined:function(v){
                         return!_.isUndefined(v)&&!_.isNull(v)
-                    }
+                    }*/
 
                 }),
 
@@ -105,11 +106,13 @@ var peRecords=[],acceptedData=[];
                             var releaseStore;
                             return releaseStore=Ext.create("Rally.data.WsapiDataStore",{
                                 autoLoad:!0,
+                                limit:"Infinity",
                                 model:"Release",
                                 fetch:["Name","ObjectID","Project","ReleaseStartDate","ReleaseDate"],
                                 filters:[],
                                 listeners:{
                                     load:function(store,releaseRecords){
+                                        // console.log(releaseRecords);
                                         var releases=_.map(releaseRecords,
                                             function(rec){
                                                 return{
@@ -158,6 +161,11 @@ var peRecords=[],acceptedData=[];
                     },
 
                     querySnapshots:function(releases){
+                        console.log("releases:",releases);
+                        var relprojs = _.map(releases,function(r) { 
+                            return r.get("Project")["Name"];
+                        });
+                        console.log("Sorted ProjectNames:",_.sortBy(relprojs));
                         var ids=_.pluck(releases,function(release){
                             return release.get("ObjectID")
                         });
@@ -183,11 +191,11 @@ var peRecords=[],acceptedData=[];
                         itemId:"myChart",
                         chartColors:["Gray","Orange","Green","Blue","Green","LightGray"],
                         storeConfig:{
-                            find:{_TypeHierarchy:{$in:["HierarchicalRequirement"]}},
+                            find:{_TypeHierarchy:{$in:["HierarchicalRequirement"]}, Children: null},
                             autoLoad:!0,
                             limit:1/0,
                             fetch:["ObjectID","Name","_TypeHierarchy","PlanEstimate","ScheduleState"],
-                            hydrate:["_TypeHierarchy","PlanEstimate"]
+                            hydrate:["_TypeHierarchy","ScheduleState"]
                         },
                         calculatorType:"MyBurnCalculator",
                         calculatorConfig:{},
