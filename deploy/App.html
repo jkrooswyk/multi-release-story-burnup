@@ -3,7 +3,7 @@
 <head>
     <title>psi-story-burnup</title>
 
-    <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
+    <script type="text/javascript" src="https://rally1.rallydev.com/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
         Rally.onReady(function () {
@@ -14,7 +14,7 @@
                     getMetrics:function(){
                         var metrics=[{
                             field:"PlanEstimate",
-                            as:"Planned Points",
+                            as:"Planned Days",
                             display:"line",
                             f:"sum"
                         },{
@@ -24,16 +24,16 @@
                         //    f:"sum"
                         //},{
                             field:"PlanEstimate",
-                            as:"Accepted Points",
+                            as:"Accepted Work",
                             display:"line",
                             f:"filteredSum",
                             filterField: 'ScheduleState',
                             filterValues: ["Accepted"]
-                        },{
-                            field:"ObjectID",
-                            as:"Story Count",
-                            display:"column",
-                            f:"count"
+                        //},{
+                        //    field:"ObjectID",
+                        //    as:"Story Count",
+                        //    display:"column",
+                        //    f:"count"
                         //},{
                         //    field:"Completed",
                         //    as:"Completed",
@@ -115,11 +115,13 @@
                             var releaseStore;
                             return releaseStore=Ext.create("Rally.data.WsapiDataStore",{
                                 autoLoad:!0,
+                                limit:"Infinity",
                                 model:"Release",
                                 fetch:["Name","ObjectID","Project","ReleaseStartDate","ReleaseDate"],
                                 filters:[],
                                 listeners:{
                                     load:function(store,releaseRecords){
+                                        // console.log(releaseRecords);
                                         var releases=_.map(releaseRecords,
                                             function(rec){
                                                 return{
@@ -168,6 +170,11 @@
                     },
 
                     querySnapshots:function(releases){
+                        console.log("releases:",releases);
+                        var relprojs = _.map(releases,function(r) { 
+                            return r.get("Project")["Name"];
+                        });
+                        console.log("Sorted ProjectNames:",_.sortBy(relprojs));
                         var ids=_.pluck(releases,function(release){
                             return release.get("ObjectID")
                         });
@@ -193,7 +200,7 @@
                         itemId:"myChart",
                         chartColors:["Gray","Orange","Green","Blue","Green","LightGray"],
                         storeConfig:{
-                            find:{_TypeHierarchy:{$in:["HierarchicalRequirement"]}},
+                            find:{_TypeHierarchy:{$in:["HierarchicalRequirement"]}, Children: null},
                             autoLoad:!0,
                             limit:1/0,
                             fetch:["ObjectID","Name","_TypeHierarchy","PlanEstimate","ScheduleState"],
@@ -223,7 +230,7 @@
                                 title:{text:"Days"}
                             },
                             yAxis:[{
-                                title:{text:"Points"}
+                                title:{text:"Person Days"}
                             }]
                         }
                     }
@@ -437,7 +444,7 @@
                     };*/
 
             Rally.launchApp('CustomApp', {
-                name:"psi-feature-burnup",
+                name:"multi-release-story-burnup",
                 parentRepos:""
             });
 
